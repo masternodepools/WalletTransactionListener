@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WalletDepositListener.Models;
 
-namespace WalletDepositListener
+namespace WalletDepositListener.Services
 {
     public class WalletEventListener
     {
@@ -19,35 +19,37 @@ namespace WalletDepositListener
         {
             _walletClient = new WalletClient(settings);
             _lastTransactionIds = new List<string>();
+        }
+
+        public async void RunListener()
+        {
+            try
+            {
+                var transactions = await GetWalletTransactions();
+                var transactionIds = transactions.Select(t => t.TxId).ToList();
+
+                if (ContainsNewTransactions(transactionIds))
+                {
+                    OnNewTransactionReceived(transactions.ToList());
+                }
+
+                _lastTransactionIds = transactionIds;
+
+                Thread.Sleep(3000);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                Thread.Sleep(1000);
+            }
+
             RunListener();
         }
 
-        private async Task RunListener()
+        private bool ContainsNewTransactions(IList<string> transactionIds)
         {
-            while (true)
-            {
-                try
-                {
-                    var transactions = await GetWalletTransactions();
-
-                    var transactionIds = transactions.Select(t => t.TxId).ToList();
-                    var difference = transactionIds.Except(_lastTransactionIds, StringComparer.OrdinalIgnoreCase).ToList();
-
-                    if (difference.Any())
-                    {
-                        OnNewTransactionReceived(transactions.ToList());
-                    }
-
-                    _lastTransactionIds = transactionIds;
-
-                    Thread.Sleep(3000);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                    Thread.Sleep(1000);
-                }
-            }
+            var difference = transactionIds.Except(_lastTransactionIds, StringComparer.OrdinalIgnoreCase).ToList();
+            return difference.Any();
         }
 
         private async Task<IList<WalletTransaction>> GetWalletTransactions()

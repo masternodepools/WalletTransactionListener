@@ -1,37 +1,37 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq;
+﻿using Amazon;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
+using Newtonsoft.Json;
 using System.Threading.Tasks;
+using WalletDepositListener.Models;
 
 namespace WalletDepositListener.Services
 {
     public class TransactionService
     {
-        public async Task AddTransactionAsync(Transaction transaction)
+        private Table _transactionsTable;
+
+        public TransactionService(AwsSettings settings)
         {
-            using (var context = new TransactionContext())
-            {
-                context.Transactions.Add(transaction);
-                await context.SaveChangesAsync();
-            }
+            var region = RegionEndpoint.GetBySystemName(settings.Region);
+            var client = new AmazonDynamoDBClient(
+                settings.AccessId,
+                settings.AccessSecret,
+                region);
+
+            _transactionsTable = Table.LoadTable(client, "transactions");
         }
 
-        public async Task<Transaction> GetLastTransaction()
+        public async Task AddTransactionAsync(WalletTransaction transaction)
         {
-            using (var context = new TransactionContext())
-            {
-                return await context.Transactions
-                    .OrderByDescending(d => d.Id)
-                    .FirstOrDefaultAsync();
-            }
+            var item = Document.FromJson(JsonConvert.SerializeObject(transaction));
+            await _transactionsTable.PutItemAsync(item);
         }
 
-        public async Task<Transaction> GetTransactionById(string transactionId)
+        public async Task<WalletTransaction> GetTransactionById(string transactionId, string userId)
         {
-            using (var context = new TransactionContext())
-            {
-                return await context.Transactions
-                    .FirstOrDefaultAsync(t => t.TransactionId == transactionId);
-            }
+            var transaction = await _transactionsTable.GetItemAsync(transactionId, userId);
+            return JsonConvert.DeserializeObject<WalletTransaction>(transaction.ToJson());
         }
     }
 }
