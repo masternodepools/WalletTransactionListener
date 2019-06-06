@@ -1,4 +1,4 @@
-﻿namespace WalletDepositListener.Models
+﻿namespace WalletTransactionListener.Models
 {
     public class AwsSettings
     {

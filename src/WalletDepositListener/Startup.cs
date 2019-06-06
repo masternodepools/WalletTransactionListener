@@ -2,10 +2,10 @@
 using QTWalletClient.Models;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WalletDepositListener.Models;
-using WalletDepositListener.Services;
+using WalletTransactionListener.Models;
+using WalletTransactionListener.Services;
 
-namespace WalletDepositListener
+namespace WalletTransactionListener
 {
     public class Startup
     {

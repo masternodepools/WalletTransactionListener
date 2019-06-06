@@ -3,9 +3,9 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using WalletDepositListener.Models;
+using WalletTransactionListener.Models;
 
-namespace WalletDepositListener.Services
+namespace WalletTransactionListener.Services
 {
     public class TransactionService
     {

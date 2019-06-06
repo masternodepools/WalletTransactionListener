@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using WalletDepositListener.Models;
+using WalletTransactionListener.Models;
 
-namespace WalletDepositListener.Services
+namespace WalletTransactionListener.Services
 {
     public class WalletEventHandler
     {
