@@ -23,7 +23,7 @@ namespace WalletTransactionListener.Models
         [JsonProperty("time")]
         public int Time { get; set; }
 
-        [JsonProperty("timereceived")]
+        [JsonProperty("timeReceived")]
         public int TimeReceived { get; set; }
 
         [JsonProperty("confirmations")]

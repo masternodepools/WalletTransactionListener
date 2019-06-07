@@ -14,11 +14,13 @@ namespace WalletTransactionListener.Services
         public Action<IList<WalletTransaction>> OnNewTransactionReceived { get; set; }
         private IList<string> _lastTransactionIds;
         private WalletClient _walletClient;
+        private string _coinName;
 
         public WalletEventListener(WalletSettings settings)
         {
             _walletClient = new WalletClient(settings);
             _lastTransactionIds = new List<string>();
+            _coinName = settings.CoinName;
         }
 
         public async void RunListener()
@@ -54,8 +56,12 @@ namespace WalletTransactionListener.Services
 
         private async Task<IList<WalletTransaction>> GetWalletTransactions()
         {
-            var response = await _walletClient.SendCommandAsync<IList<WalletTransaction>>(WalletCommands.ListTransactions);
-            return response.Result;
+            var transactions = (await _walletClient.SendCommandAsync<IList<WalletTransaction>>(WalletCommands.ListTransactions)).Result;
+            foreach (var transaction in transactions)
+            {
+                transaction.CoinName = _coinName;
+            }
+            return transactions;
         }
 
     }

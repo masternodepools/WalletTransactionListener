@@ -31,6 +31,10 @@ namespace WalletTransactionListener.Services
         public async Task<WalletTransaction> GetTransactionById(string transactionId, string userId)
         {
             var transaction = await _transactionsTable.GetItemAsync(transactionId, userId);
+            if (transaction == null)
+            {
+                return null;
+            }
             return JsonConvert.DeserializeObject<WalletTransaction>(transaction.ToJson());
         }
     }
