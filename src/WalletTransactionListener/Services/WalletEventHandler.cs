@@ -7,12 +7,16 @@ namespace WalletTransactionListener.Services
 {
     public class WalletEventHandler
     {
+        private MainWalletService _mainWalletService;
         private TransactionService _transactionService;
 
         public WalletEventHandler(AwsSettings settings)
-            => _transactionService = new TransactionService(settings);
-        
-        public async Task HandleTransactionsReceived(IList<WalletTransaction> transactions)
+        {
+            _mainWalletService = new MainWalletService(settings);
+            _transactionService = new TransactionService(settings);
+        }
+
+        public async Task<int> HandleTransactionsReceived(IList<WalletTransaction> transactions)
         {
             var newTransactions = 0;
 
@@ -29,7 +33,8 @@ namespace WalletTransactionListener.Services
                 await _transactionService.AddTransactionAsync(transaction);
                 newTransactions++;
             }
-            Console.WriteLine($"{DateTime.Now}: Found {newTransactions} new transactions.");
+
+            return newTransactions;
         }
     }
 }

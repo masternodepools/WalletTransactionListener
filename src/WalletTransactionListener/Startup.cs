@@ -9,9 +9,10 @@ namespace WalletTransactionListener
 {
     public class Startup
     {
-        private WalletEventListener _eventListener;
-        private WalletEventHandler _eventHandler;
-        
+        private readonly string _coin;
+        private readonly WalletEventListener _eventListener;
+        private readonly WalletEventHandler _eventHandler;
+
         public Startup(IConfiguration configuration)
         {
             var walletSettings = configuration
@@ -21,6 +22,8 @@ namespace WalletTransactionListener
             var awsSettings = configuration
                 .GetSection("AwsSettings")
                 .Get<AwsSettings>();
+
+            _coin = walletSettings.CoinName;
 
             _eventListener = new WalletEventListener(walletSettings);
 
@@ -34,6 +37,17 @@ namespace WalletTransactionListener
         }
 
         private async void OnNewTransactionReceived(IList<WalletTransaction> transactions)
-            => await _eventHandler.HandleTransactionsReceived(transactions);
+        {
+            var transactions = await _eventHandler.HandleTransactionsReceived(transactions);
+            if (transactions > 0)
+            {
+                var balance = (await _walletClient.SendCommandAsync<decimal>(
+                    WalletCommands.GetBalance)).Result;
+
+                await _mainWalletService.UpdateBalanceAsync(_coin, balance);
+            }
+
+            Console.WriteLine($"{DateTime.Now}: Found {transactions} new transactions.");
+        }
     }
 }
